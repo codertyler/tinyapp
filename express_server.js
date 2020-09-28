@@ -9,16 +9,8 @@ const urlDatabase = {
   "9sm5xK" : "http://www.google.com"
 };
 
-app.get('/', (req, res) => {
-  res.end("Hello!");
-});
-
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
-});
-
-app.get('/hello', (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.get('/urls', (req, res) => {
@@ -29,6 +21,11 @@ app.get('/urls', (req, res) => {
 app.get('urls/:shortURL', (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase.req.params.longURL };
   res.render('urls_show', templateVars);
+});
+
+app.post("/urls", (req, res) => {
+  console.log(req.body);  // Log the POST request body to the console
+  res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
 app.listen(PORT, () => {
