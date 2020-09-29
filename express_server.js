@@ -30,7 +30,7 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-app.post("/urls", (req, res) => {
+app.post('/urls', (req, res) => {
   // console.log(req.body);  // Log the POST request body to the console
   // res.send("Ok");         // Respond with 'Ok' (we will replace this)
   const shortURL = generateRandomString();
@@ -38,6 +38,11 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 
 });
+
+app.post('/urls/:shortURL/delete', (req, res) => {
+  delete urlDatabase.shortURL;
+  res.redirect('/urls');
+})
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
