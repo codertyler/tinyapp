@@ -2,7 +2,9 @@ const express = require('express');
 const app = express();
 const PORT =  8080; // default port
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -44,15 +46,17 @@ app.post('/urls', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
-})
+});
 
 app.post('/urls/:shortURL/update', (req, res) =>{
-  
-
   urlDatabase[req.params.shortURL] = req.body.newURL ;
-  
   res.redirect('/urls');
-})
+});
+
+app.post('/login', (req, res) => {
+
+});
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
