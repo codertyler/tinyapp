@@ -3,9 +3,8 @@ const app = express();
 const PORT =  8080; // default port
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const e = require('express');
 app.use(cookieParser());
-
-
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -16,26 +15,58 @@ const urlDatabase = {
   "9sm5xK" : "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
+
+
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
 app.get('/urls', (req, res) => {
+  const user_id = req.cookies['user_id'];
+  
   const templateVars = { 
+  
     urls : urlDatabase,
-    username: req.cookies["username"],
-    };
+    user_id,
+    user : users[user_id],
+    email: users[user_id]['email']
+    
+  };
 
   
   res.render('urls_index', templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const user_id = req.cookies['user_id'];
+  const templateVars = { 
+  
+    urls : urlDatabase,
+    user_id,
+    user : users[user_id],
+    email: users[user_id]['email']
+    
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const user_id = req.cookies['user_id'];
+
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], email: users[user_id]['email'] };
   res.render('urls_show', templateVars);
 });
 
@@ -44,7 +75,7 @@ app.post('/urls', (req, res) => {
   // res.send("Ok");         // Respond with 'Ok' (we will replace this)
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
+  res.redirect(`/urls`);
 
 });
 
@@ -58,18 +89,35 @@ app.post('/urls/:shortURL/update', (req, res) =>{
   res.redirect('/urls');
 });
 
+// come back later to set
+
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookie('user_id', req.body.user_id);
   res.redirect('/urls');
 });
 
+// come back later to set
+
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 })
 
-app.get('/login_form', (req, res) => {
-  res.redirect('/login_form');
+app.get('/register', (req, res) => {
+  res.render('register');
+});
+
+app.post('/register', (req, res) =>{
+  const user = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  users[user] = {
+    'id' : user,
+    'email' : email,
+    'password' : password
+  };
+  res.cookie('user_id', user);
+  res.redirect('/urls');
 });
 
 
