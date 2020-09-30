@@ -54,7 +54,7 @@ app.post('/urls/:shortURL/update', (req, res) =>{
 });
 
 app.post('/login', (req, res) => {
-
+  res.cookie('username', req.body.username);
 });
 
 
