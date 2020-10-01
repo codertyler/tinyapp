@@ -42,10 +42,12 @@ app.get('/urls', (req, res) => {
     urls : urlDatabase,
     user_id,
     user : users[user_id],
-    email: users[user_id]['email']
-    
+    email : ""
   };
 
+  if (user_id) {
+    templateVars.email = users[user_id]['email'];
+  }
   
   res.render('urls_index', templateVars);
 });
@@ -108,6 +110,22 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', (req, res) =>{
+  
+  const checkingEmail = function() {
+    for(let items in users) {
+      if (users[items]['email'] === req.body.email) {
+        return true;
+      } 
+    }
+  }
+  
+  
+  if (!req.body.email || !req.body.password) {
+    res.status(400).send("email or password required");
+  } else if(checkingEmail()) {
+    res.status(400).send("user already exists");
+  }
+  
   const user = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
