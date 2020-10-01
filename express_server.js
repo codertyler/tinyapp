@@ -3,7 +3,6 @@ const app = express();
 const PORT =  8080; // default port
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-const e = require('express');
 app.use(cookieParser());
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -28,6 +27,42 @@ const users = {
   }
 }
 
+// Helper functions *************************************
+
+
+function generateRandomString () {
+  return Math.random().toString(36).slice(6);
+  
+};
+
+const checkingEmailMatch = function(email) {
+  for (user in users) {
+    if(users[user].email === email) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const checkIfPasswordMatch = function(password) {
+  for (user in users) {
+    if(user[users].password === password) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const getUserByEmail = function (email) {
+  for (user in users) {
+    if(users[user].email === email) {
+      return users[user];
+    }
+  }
+}
+
+
+// ******************************************************
 
 
 app.get('/urls.json', (req, res) => {
@@ -59,9 +94,12 @@ app.get("/urls/new", (req, res) => {
     urls : urlDatabase,
     user_id,
     user : users[user_id],
-    email: users[user_id]['email']
-    
+    email : ""
   };
+
+  if (user_id) {
+    templateVars.email = users[user_id]['email'];
+  }
   res.render("urls_new", templateVars);
 });
 
@@ -94,12 +132,29 @@ app.post('/urls/:shortURL/update', (req, res) =>{
 // come back later to set
 
 app.post('/login', (req, res) => {
-  res.cookie('user_id', req.body.user_id);
-  res.redirect('/urls');
-});
+  
+  let email = req.body.email;
+  let password = req.body.password;
+  let user;
+
+  if (email === "" || password === "") {
+    return res.status(403).send("email or password cannot empty");
+  } else if (checkingEmailMatch(email)) {
+    return res.status(403).send("email does not exist");
+  } else {
+    user = getUserByEmail(email);
+    
+    if (user.password = password) {
+      res.cookie("user_id", user.id);
+      res.redirect('/urls')
+    }
+  } 
+
+
+  });
 
 app.get('/login', (req, res) => {
-
+  const templateVars = { username: req.cookies["id"], user:null }
   res.render('login');
 });
 
@@ -107,10 +162,11 @@ app.get('/login', (req, res) => {
 
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
-  res.redirect('/urls');
+  res.redirect('/login');
 })
 
 app.get('/register', (req, res) => {
+  const templateVars = { username: req.cookies["id"], user:null }
   res.render('register');
 });
 
@@ -147,8 +203,3 @@ app.post('/register', (req, res) =>{
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-function generateRandomString () {
-  return Math.random().toString(36).slice(6);
-  
-};
