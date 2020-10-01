@@ -98,6 +98,11 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
+app.get('/login', (req, res) => {
+
+  res.render('login');
+});
+
 // come back later to set
 
 app.post('/logout', (req, res) => {
