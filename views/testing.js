@@ -1,17 +1,9 @@
-const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
-};
+const urls = [ 'http://www.lighthouselabs.ca', 'www.telnar.com' ];
 
-
-const findshortURLFromID = function(userID) {
-  for (items in urlDatabase) {
-    console.log(urlDatabase[items]['longURL'])
-    if(urlDatabase[items]['userID'] === userID) {
-      console.log(items)
-    }
+const looping = (arr) => {
+  for (items of arr) {
+    console.log(items);
   }
 }
 
-findshortURLFromID('b2xVn2');
-
+looping(urls);
