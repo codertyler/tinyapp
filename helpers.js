@@ -45,6 +45,7 @@ const getLongURLbyshort = function(userID, database) {
   return longURLs;
 };
 
+
 const findshortURLFromID = function(userID, database) {
   let shortURLs = [];
   for (items in database) {
@@ -54,6 +55,8 @@ const findshortURLFromID = function(userID, database) {
 }
   return shortURLs;
 };
+
+console.log(findshortURLFromID("userRandomID", urlDatabase))
 
 const generateRandomString = function () {
   return Math.random().toString(36).slice(6);
