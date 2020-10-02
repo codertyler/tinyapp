@@ -189,6 +189,8 @@ app.post('/login', (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   let user;
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+  console.log(hashedPassword);
 
   if (email === "" || password === "") {
     return res.status(403).send("email or password cannot empty");
@@ -244,8 +246,9 @@ app.post('/register', (req, res) => {
 
   const user = generateRandomString();
   const email = req.body.email;
-  const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  const password = bcrypt.hashSync(req.body.password, 10);
+  console.log(password);
+
   users[user] = {
     'id': user,
     'email': email,
@@ -253,8 +256,9 @@ app.post('/register', (req, res) => {
   };
   res.cookie('user_id', user);
   res.redirect('/urls');
-});
 
+
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
