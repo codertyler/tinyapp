@@ -3,6 +3,8 @@ const app = express();
 const PORT = 8080; // default port
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
+
 
 // Cookie related apps
 app.use(cookieParser());
@@ -194,7 +196,7 @@ app.post('/login', (req, res) => {
     return res.status(403).send("email does not exist");
   } else {
     user = getUserByEmail(email);
-    if (user.password === password) {
+    if (bcrypt.compareSync(password, hashedPassword)) {
       res.cookie("user_id", user.id);
       res.redirect('/urls')
     } else {
@@ -243,6 +245,7 @@ app.post('/register', (req, res) => {
   const user = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   users[user] = {
     'id': user,
     'email': email,
