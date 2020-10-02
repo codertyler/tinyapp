@@ -25,15 +25,15 @@
       <tbody>
         <% for(let url in urls) { %>
           <tr>
-            <td><%= url %></td>
-            <td><%= urls[url] %></td>
+            <td><%= shortURL %></td>
+            <td><%= urls["longURL"] %></td>
             <td>
-              <form action="/urls/<%= url %>" method="GET">
+              <form action="/urls/<%= shortURL %>" method="GET">
               <button type="submit" class="btn btn-info">Edit</button>
               </form>
             </td>
             <td>
-              <form action="/urls/<%= url %>/delete" method="POST">
+              <form action="/urls/<%= shortURL %>/delete" method="POST">
               <button type="submit" class="btn btn-danger">Delete</button>
               </form>
             </td>
