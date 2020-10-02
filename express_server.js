@@ -5,6 +5,17 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
+// Helper functions *************************************
+
+const {generateRandomString} = require('./helpers');
+const {checkingEmailMatch} = require('./helpers');
+const {getUserByEmail} = require('./helpers');
+const {getLongURLbyshort} = require('./helpers');
+const {findshortURLFromID} = require('./helpers');
+
+// ******************************************************
+
+
 
 // Cookie related apps
 app.use(cookieSession({
@@ -37,53 +48,7 @@ const users = {
   }
 }
 
-// Helper functions *************************************
 
-
-function generateRandomString() {
-  return Math.random().toString(36).slice(6);
-
-};
-
-const checkingEmailMatch = function (email) {
-  for (user in users) {
-    if (users[user].email === email) {
-      return false;
-    }
-  }
-  return true;
-};
-
-const getUserByEmail = function (email) {
-  for (user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-}
-
-const getLongURLbyshort = function(userID) {
-  let longURLs = [];
-  for (items in urlDatabase) {
-    if(urlDatabase[items]["userID"] === userID) {
-      longURLs.push(urlDatabase[items]["longURL"]);
-    }
-}
-  return longURLs;
-}
-
-const findshortURLFromID = function(userID) {
-  let shortURLs = [];
-  for (items in urlDatabase) {
-    if(urlDatabase[items]["userID"] === userID) {
-      shortURLs.push(items);
-    }
-}
-  return shortURLs;
-}
-
-
-// ******************************************************
 
 
 app.get('/urls.json', (req, res) => {
@@ -97,8 +62,8 @@ app.get('/urls', (req, res) => {
   } 
 
   const user_id = req.session['user_id'];
-  const shortURL = findshortURLFromID(user_id);
-  const longURL = getLongURLbyshort(user_id);
+  const shortURL = findshortURLFromID(user_id, urlDatabase);
+  const longURL = getLongURLbyshort(user_id, urlDatabase);
 
   const templateVars = {
 
@@ -111,8 +76,8 @@ app.get('/urls', (req, res) => {
 
   if (user_id) {
     templateVars.email = users[user_id]['email'];
-    templateVars.shortURL = findshortURLFromID(user_id);
-    templateVars.longURL = getLongURLbyshort(user_id)
+    templateVars.shortURL = findshortURLFromID(user_id, urlDatabase);
+    templateVars.longURL = getLongURLbyshort(user_id, urlDatabase)
 
   }
 
@@ -125,7 +90,7 @@ app.get("/urls/new", (req, res) => {
     res.redirect('/login');
   }
   const user_id = req.session['user_id'];
-  const shortURL = findshortURLFromID(users[user_id]);
+  const shortURL = findshortURLFromID(user_id, urlDatabase);
   const templateVars = {
 
     urls: urlDatabase[shortURL],
@@ -133,12 +98,12 @@ app.get("/urls/new", (req, res) => {
     user: users[user_id],
     email: "",
     longURL: "",
-    shortURL: findshortURLFromID(user_id)
+    shortURL: findshortURLFromID(user_id, urlDatabase)
   };
 
   if (user_id) {
     templateVars.email = users[user_id]['email'];
-    templateVars.shortURL = findshortURLFromID(user_id);
+    templateVars.shortURL = findshortURLFromID(user_id, urlDatabase);
 
   }
   res.render("urls_new", templateVars);
@@ -146,7 +111,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get('/urls/:shortURL', (req, res) => {
   const user_id = req.session['user_id'];
-  const shortURL = findshortURLFromID(user_id);
+  const shortURL = findshortURLFromID(user_id, urlDatabase);
 
   const templateVars = {
 
@@ -160,8 +125,8 @@ app.get('/urls/:shortURL', (req, res) => {
 
   if (user_id) {
     templateVars.email = users[user_id]['email'];
-    templateVars.shortURL = findshortURLFromID(user_id);
-    templateVars.longURL = getLongURLbyshort(user_id)
+    templateVars.shortURL = findshortURLFromID(user_id, urlDatabase);
+    templateVars.longURL = getLongURLbyshort(user_id, urlDatabase)
   }
   if (user_id) {
     templateVars.email = users[user_id]['email'];
@@ -174,7 +139,6 @@ app.post('/urls', (req, res) => {
   const user_id = req.session['user_id'];
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = { longURL: req.body.longURL, userID: user_id };
-  console.log(urlDatabase);
   res.redirect('/urls');
 
 });
@@ -182,7 +146,7 @@ app.post('/urls', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   
   const user_id = req.session['user_id'];
-  const shortURL = findshortURLFromID(user_id);
+  const shortURL = findshortURLFromID(user_id, urlDatabase);
   delete urlDatabase[shortURL];
   res.redirect('/urls');
 });
@@ -204,13 +168,14 @@ app.post('/login', (req, res) => {
 
   if (email === "" || password === "") {
     return res.status(403).send("email or password cannot empty");
-  } else if (checkingEmailMatch(email)) {
+  } else if (checkingEmailMatch(email, users)) {
     return res.status(403).send("email does not exist");
   } else {
-    user = getUserByEmail(email);
+    // user = getUserByEmail(email, user);
     if (bcrypt.compareSync(password, hashedPassword)) {
       // req.cookie("user_id", user.id);
-      req.session.user_id = user.id;
+      user = getUserByEmail(email, users);
+      req.session.user_id = user;
       res.redirect('/urls')
     } else {
       return res.status(403).send("wrong password!");
