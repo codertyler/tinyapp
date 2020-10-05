@@ -56,7 +56,6 @@ const findshortURLFromID = function(userID, database) {
   return shortURLs;
 };
 
-console.log(findshortURLFromID("userRandomID", urlDatabase))
 
 const generateRandomString = function () {
   return Math.random().toString(36).slice(6);

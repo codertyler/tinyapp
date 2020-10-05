@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-// Helper functions *************************************
+// Helper functions imports: ***************************
 
 const {generateRandomString} = require('./helpers');
 const {checkingEmailMatch} = require('./helpers');
@@ -26,15 +26,18 @@ app.use(cookieSession({
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
+// Setting the view engine as EJS
 app.set('view engine', 'ejs');
 
+
+//URL Database for the app stored as an object
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
             
   "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
 };
 
+//User Database stored as an object
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -48,38 +51,41 @@ const users = {
   }
 }
 
-
-
-
+// Shows the JSON style of the urls page
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
+
+//This is the index or the main page
 app.get('/urls', (req, res) => {
 
+//If user is not logged in it shows a error page 
   if (!req.session['user_id']) {
-    res.redirect('/login');
-  } 
+    return res.status(403).send("You must be logged in to view this page");  } 
 
+  
+  //Setting the variables so it can easier to pass into templateVars
   const user_id = req.session['user_id'];
-  const shortURL = findshortURLFromID(user_id, urlDatabase);
-  const longURL = getLongURLbyshort(user_id, urlDatabase);
-
+  
   const templateVars = {
 
     user_id,
     user: users[user_id],
-    email: "",
+    shortURL: "",
     longURL: "",
-    shortURL: ""
-  };
-
+   };
+  
   if (user_id) {
     templateVars.email = users[user_id]['email'];
     templateVars.shortURL = findshortURLFromID(user_id, urlDatabase);
-    templateVars.longURL = getLongURLbyshort(user_id, urlDatabase)
+    templateVars.longURL = getLongURLbyshort(user_id, urlDatabase);
 
   }
+
+ 
+
+
 
   res.render('urls_index', templateVars);
 });
@@ -110,6 +116,10 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
+  if (!req.session['user_id']) {
+    return res.status(403).send("You must be logged in to view this page");
+  }
+  
   const user_id = req.session['user_id'];
   const shortURL = findshortURLFromID(user_id, urlDatabase);
 
@@ -123,6 +133,8 @@ app.get('/urls/:shortURL', (req, res) => {
     shortURL: ""
   };
 
+ 
+
   if (user_id) {
     templateVars.email = users[user_id]['email'];
     templateVars.shortURL = findshortURLFromID(user_id, urlDatabase);
@@ -134,6 +146,14 @@ app.get('/urls/:shortURL', (req, res) => {
 
   res.render('urls_show', templateVars);
 });
+
+app.get('/u/:id', (req, res) => {
+  const user_id = req.session['user_id'];
+  const longURL = getLongURLbyshort(user_id, urlDatabase);
+  res.redirect(longURL);
+  
+  
+}),
 
 app.post('/urls', (req, res) => {
   const user_id = req.session['user_id'];
@@ -187,7 +207,6 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  const templateVars = { username: req.session["id"], user: null }
   res.render('login');
 });
 
