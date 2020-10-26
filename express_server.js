@@ -26,26 +26,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Setting the view engine as EJS
 app.set("view engine", "ejs");
 
-//Redirecting to the login page if a visitor attempts to access user-privilege pageps
-
-// app.use((req, res, next) => {
-//   let sessionUserID = req.session.userID;
-//   req.currentUser = users[sessionUserID];
-
-//   if (
-//     req.currentUser === undefined &&
-//     req.path !== "/login" &&
-//     req.path !== "/register" &&
-//     req.path !== "/urls" &&
-//     !req.path.startsWith("/u/")
-//   ) {
-//     res.redirect("/login");
-//     return;
-//   } else {
-//     next();
-//   }
-// });
-
 //User Database stored as an object
 const users = {
   userRandomID: {
@@ -62,7 +42,7 @@ const users = {
 
 //URL Database for the app stored as an object
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
+  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
 
   "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" },
 };
@@ -108,13 +88,9 @@ app.get("/register", (req, res) => {
 //If all successful redirecting the user to the main page
 //If the password doesn't match, it will send error
 
-
 app.post("/login", (req, res) => {
-  
-  const {email, password} = req.body;
+  const { email, password } = req.body;
   const dbPassword = users[checkingEmailMatch(email, users)].password;
-
-
 
   if (email === "" || password === "") {
     res.status(403).send("email or password cannot empty");
@@ -122,16 +98,16 @@ app.post("/login", (req, res) => {
   } else if (!checkingEmailMatch(email, users)) {
     res.status(403).send("email does not exist");
     return;
-  } else if (bcrypt.compareSync(password, dbPassword) || password === dbPassword) {
+  } else if (
+    bcrypt.compareSync(password, dbPassword) ||
+    password === dbPassword
+  ) {
     req.session["user_id"] = checkingEmailMatch(email, users);
-    res.redirect('/urls');
-    
+    res.redirect("/urls");
   } else {
     res.status(403).send("wrong password");
     return;
   }
- 
-  
 });
 
 //------------- Add new URL--------------
@@ -141,16 +117,16 @@ app.post("/login", (req, res) => {
 app.get("/urls/new", (req, res) => {
   if (!req.session["user_id"]) {
     return res.status(403).send("You must be logged in to create new URLs");
-  } 
+  }
 
   const name = req.session["user_id"];
   const email = name["email"];
-  let templateVars = {  urls: urlDatabase, 
-                        name: users[name],
-                        user_id : req.session["user_id"],
-                        email: ""
-
-                      };
+  let templateVars = {
+    urls: urlDatabase,
+    name: users[name],
+    user_id: req.session["user_id"],
+    email: "",
+  };
   res.render("urls_new", templateVars);
 });
 
@@ -165,9 +141,8 @@ app.get("/urls", (req, res) => {
   if (!req.session["user_id"]) {
     return res.status(403).send("You must be logged in to view this page");
   }
-  
-  const name = req.session["user_id"];
 
+  const name = req.session["user_id"];
 
   const templateVars = {
     name,
@@ -178,8 +153,6 @@ app.get("/urls", (req, res) => {
   };
 
   if (name) {
-     
-
     templateVars.email = users[name]["email"];
     templateVars.obj = urlsForUsers(name, urlDatabase);
   }
@@ -192,7 +165,6 @@ app.get("/urls", (req, res) => {
 //This function generates shortURL from the random number generating function in the helper functions
 //This adds the new shortened URL along with long URL into the database assigned to the correct user ID
 app.post("/urls", (req, res) => {
-  
   const user_id = req.session["user_id"];
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = { longURL: req.body.longURL, userID: user_id };
@@ -200,27 +172,23 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  
-
   const shortURL = req.params.shortURL;
 
-  
-  
   const user_id = req.session.user_id;
-
-  
 
   if (!user_id) {
     return res.status(403).send("You must be logged in to view this page");
-  } 
-  else if (user_id !== urlDatabase[shortURL]["userID"]) {
+  } else if (user_id !== urlDatabase[shortURL]["userID"]) {
     return res.status(403).send("You don't have the privilege for this page");
-
   }
 
-
   const name = req.session["user_id"];
-  let templateVars = {shortURL : req.params.shortURL, longURL : urlDatabase[req.params.shortURL]['longURL'], name: users[name], email : users[name]["email"] };
+  let templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL]["longURL"],
+    name: users[name],
+    email: users[name]["email"],
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -232,16 +200,15 @@ app.get("/urls/:shortURL", (req, res) => {
 //actual deletion from the database
 
 app.get("/u/:id", (req, res) => {
-  const user_id = req.session["user_id"];
-  const longURL = getLongURLbyID(user_id, urlDatabase);
+  const shortURL = req.params.id;
+  const longURL = urlDatabase[shortURL]["longURL"];
   res.redirect(longURL);
 }),
   app.post("/urls/:shortURL/delete", (req, res) => {
     if (!req.session["user_id"]) {
       return res.status(403).send("You must be logged in to view this page");
     }
-    
-    
+
     const user_id = req.session["user_id"];
     const shortURL = req.params["shortURL"];
     delete urlDatabase[shortURL];
@@ -259,19 +226,14 @@ app.post("/urls/:shortURL/update", (req, res) => {
 
 //This handles the login page directing to the login page
 app.get("/login", (req, res) => {
-  
-  if(req.session["user_id"]) {
+  if (req.session["user_id"]) {
     res.redirect("/urls");
   } else {
     let templateVars = {
-      name: req.session["user_id"]
-    }
+      name: req.session["user_id"],
+    };
     res.render("login", templateVars);
   }
-
-  
-
-
 });
 
 //This page handles the logout by clearing cookies from the browser
@@ -296,7 +258,6 @@ app.post("/logout", (req, res) => {
 //Sets a session so the user can use the services
 //Goes to the main page
 app.post("/register", (req, res) => {
-
   const checkingEmail = function () {
     for (let items in users) {
       if (users[items]["email"] === req.body.email) {
