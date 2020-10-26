@@ -10,33 +10,20 @@ const getUserByEmail = function (email, database) {
 //Check if the email already exist in the database
 const checkingEmailMatch = function (email, database) {
   for (user in database) {
-    if (database[user]["email"] === email) {
-      return false;
+    if (database[user].email === email) {
+      return database[user].id;
     }
   }
-  return true;
 };
 
 //Gets the longURL by entering User ID and the database
-const getLongURLbyID = function (userID, database) {
-  let longURLs = [];
-  for (items in database) {
-    if (database[items]["userID"] === userID) {
-      longURLs.push(database[items]["longURL"]);
-    }
-  }
-  return longURLs;
-};
 
-//Gets the short URL by entering user ID and database
-const findshortURLFromID = function (userID, database) {
-  let shortURLs = [];
-  for (items in database) {
-    if (database[items]["userID"] === userID) {
-      shortURLs.push(items);
-    }
+const urlsForUsers = (id, urlDB) => {
+  const userURLs = {};
+  for (user in urlDB) {
+    if (urlDB[user]["userID"] === id) userURLs[user] = urlDB[user];
   }
-  return shortURLs;
+  return userURLs;
 };
 
 //Generating random alphanumerics to assign as a user name
@@ -47,8 +34,7 @@ const generateRandomString = function () {
 //Exporting the modules to the server file
 module.exports = {
   generateRandomString,
-  getLongURLbyID,
+  urlsForUsers,
   getUserByEmail,
   checkingEmailMatch,
-  findshortURLFromID,
 };

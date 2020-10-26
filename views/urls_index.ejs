@@ -31,28 +31,26 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <% for (item of shortURL) { %>
-            <td><%= item %></td>
-
-            <% }%> <% for (items of longURL) { %>
-            <td><%= items %></td>
-
-            <% }%> <% for (item of shortURL) { %>
-
-            <td>
-              <form action="/urls/<%= item %>" method="GET">
-                <button type="submit" class="btn btn-info">Edit</button>
-              </form>
-            </td>
-
-            <td>
-              <form action="/urls/<%= item %>/delete" method="POST">
-                <button type="submit" class="btn btn-danger">Delete</button>
-              </form>
-            </td>
-          </tr>
-          <% }%>
+          <% for(let url in obj) { %>
+            <tr>
+              <td><%= url %></td>
+              <td>
+                <a href="<%= obj[url].longURL %>"> <%= obj[url].longURL %> </a>
+              </td>
+              <!-- form to EDIT long URL, the button redirects to url into page -->
+              <td>
+                <form method="GET" action="/urls/<%= url %>">
+                  <input class="btn btn-primary" type="submit" value="Edit">
+                </form>
+              </td>
+              <!-- form to DELETE URL  -->
+              <td>
+                <form method="POST" action="/urls/<%= url %>/delete">
+                  <input class="btn btn-danger" type="submit" value="Delete">
+                </form>
+              </td>
+            </tr>
+          <% } %>
         </tbody>
       </table>
     </main>

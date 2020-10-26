@@ -1,8 +1,7 @@
 const { assert } = require("chai");
 const { getUserByEmail } = require("../helpers.js");
 const { checkingEmailMatch } = require("../helpers");
-const { getLongURLbyshort } = require("../helpers");
-const { findshortURLFromID } = require("../helpers");
+const { urlsForUsers } = require("../helpers");
 
 const testUsers = {
   userRandomID: {
